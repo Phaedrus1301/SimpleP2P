@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search } from "lucide-react"
+import UserList from "@/components/UserList"
 
 export default function Home() {
   return (
@@ -15,7 +16,9 @@ export default function Home() {
             <Input className="pl-8" placeholder="Search" />
           </div>
         </div>
-        <div className="flex-grow">{/* Chat list would go here */}</div>
+        <div className="flex-grow">
+          <UserList />
+        </div>
         <div className="p-4 border-t flex items-center">
           <Avatar>
             <AvatarImage src="/placeholder.svg" alt="User" />

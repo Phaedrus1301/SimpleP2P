@@ -36,13 +36,15 @@ export default function SignUp() {
       });
       const data = await response.json();
       if(response.ok) {
+        const userId = data.newUser ? data.newUser.id : data.user.id;
         localStorage.setItem('authToken', data.token);
+        localStorage.setItem('setUserId', userId);
         window.location.href = '/';
       } else {
         setError(data.message || 'Something went wrong');
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       setError('An error occurred. Please try again.');
     } finally {
       setLoading(false);

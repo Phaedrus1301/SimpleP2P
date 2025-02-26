@@ -12,17 +12,17 @@ export async function POST(req: NextApiRequest) {
   }
 
   try {
-    let user: any = null;
+    let existingUser: any = null;
 
     if(email) {
-      user = await new Promise((resolve, reject) => {
+      existingUser = await new Promise((resolve, reject) => {
         db.get(`SELECT * FROM users WHERE email = ? LIMIT 1`, [email], (err, row) => {
           if (err) reject(err);
           else resolve(row);
         });
       });
     } else if(mobile) {
-      user = await new Promise((resolve, reject) => {
+      existingUser = await new Promise((resolve, reject) => {
         db.get(`SELECT * FROM users WHERE mobile = ? LIMIT 1`, [mobile], (err, row) => {
           if (err) reject(err);
           else resolve(row);
@@ -30,18 +30,18 @@ export async function POST(req: NextApiRequest) {
       });
     }
 
-    if(user) {
+    if(existingUser) {
       const token = jwt.sign(
         {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          mobile: user.mobile
+          id: existingUser.id,
+          name: existingUser.name,
+          email: existingUser.email,
+          mobile: existingUser.mobile
         },
         'NotLegitButIneedthisToRun',
         { expiresIn: '1h' }
       );
-      return NextResponse.json({ message: "user authenticated", user, token });
+      return NextResponse.json({ message: "user authenticated", existingUser: { id: existingUser.id, name: existingUser.name, email: existingUser.email, mobile: existingUser.mobile }, token });
     }
 
     const newUser: any = await new Promise((resolve, reject) => {
@@ -61,7 +61,7 @@ export async function POST(req: NextApiRequest) {
       'NotLegitButIneedthisToRun',
       { expiresIn: '1h' }
     );
-    return NextResponse.json({ message: "user authenticated", newUser, token });
+    return NextResponse.json({ message: "user authenticated", newUser: { id: newUser.id, name: newUser.name, email: newUser.email, mobile: newUser.mobile }, token });
 
   } catch (err) {
     console.error(err);
