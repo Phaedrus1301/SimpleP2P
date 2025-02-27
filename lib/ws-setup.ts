@@ -1,23 +1,40 @@
-import { useState, useEffect } from "react";
-
-let ws: WebSocket | null = null;
+import { useState, useEffect, useRef } from "react";
 
 const useWebSocket = (userId: string) => {
-  const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
   const [messages, setMessages] = useState<{ from: string, to: string, message:string}[]>([]);
-
+  const [onlineUsers, setOnlineUsers] = useState<string[]>([]);
+  const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     if (!userId) return;
 
-    let ws: WebSocket | null = null;
-
     const connectWS = () => {
-      ws = new WebSocket('ws://localhost:3377');
+      if(wsRef.current) {
+        console.log("duplicate connection prevention kachow!");
+      }
+
+      let ws = new WebSocket('ws://localhost:3377');
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        const register = { type: "register", userId };
+        ws?.send(JSON.stringify(register));
+        ws?.send(JSON.stringify({type: "status"}));
+      };
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        setMessages((prev) => [...prev, { from: data.string, to: data.to, message: data.message }]);
+        if(data.type === "message") {
+          setMessages((prev) => {
+            const newMessages = [...prev, { from: data.from, to: data.to, message: data.message }];
+            return newMessages;
+          });
+        }
+        if(data.type === "status") {
+          console.log("status count received", data);
+          setOnlineUsers(data.onlineUsers);
+        }
+
       };
   
       ws.onerror = (error) => {
@@ -26,27 +43,36 @@ const useWebSocket = (userId: string) => {
 
       ws.onclose = () => {
         console.log("WebSocket connection closed");
+        wsRef.current = null;
+        setTimeout(connectWS, 2000);
       };
-
-      setWsInstance(ws);
     };
 
     connectWS();
 
     return () => {
-      if(ws?.readyState === 1) {
-        ws?.close();
+      if(wsRef.current?.readyState === WebSocket.OPEN) {
+        wsRef.current.close();
       }
+      wsRef.current = null;
     }
   }, [userId]);
 
+  // useEffect(() => {
+  //   console.log("Messages updated:", messages);
+  // }, [messages]);  
+
   const sendMessage = (to: string, message: string) => {
+    const wsInstance = wsRef.current;
     if(wsInstance && wsInstance.readyState === WebSocket.OPEN) {
-      wsInstance.send(JSON.stringify({ type: "message", to, userId, message }));
+      const msg = { type: "message", to, userId, message };
+      wsInstance.send(JSON.stringify(msg));
+    } else {
+      console.log("websocket not open. message not sent.");
     }
   };
 
-  return { wsInstance, messages, sendMessage };
+  return { messages, sendMessage, onlineUsers };
 };
 
 export default useWebSocket;

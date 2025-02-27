@@ -12,18 +12,18 @@ import useWebSocket from "@/lib/ws-setup"
 
 export default function Home() {
   const router = useRouter();
-  const[activeUser, setActiveUser] = useState<string | null>(null);
+  const [activeUser, setActiveUser] = useState<string | null>("");
 
   useEffect(() => {
-    const activeUserId = localStorage.getItem("setUserId");
-    setActiveUser(activeUserId);
+    const userNow = localStorage.getItem("setUserId");
+    setActiveUser(userNow);
     const token = localStorage.getItem("authToken");
-    
-    if(!token) {
+
+    if (!token) {
       router.push("/auth");
     }
-  }, []);
-  
+  }, [activeUser]);
+
 
   const [selectedUser, setSelectedUser] = useState<string | null>("");
 
@@ -31,10 +31,10 @@ export default function Home() {
     typeof window !== "undefined" ? localStorage.getItem("setUserId") || "" : ""
   );
 
-  const [messageInput, setMessageInput] = useState(""); 
+  const [messageInput, setMessageInput] = useState("");
 
   const handleSendMessage = () => {
-    if(selectedUser && messageInput.trim() !== "") {
+    if (selectedUser && messageInput.trim() !== "") {
       sendMessage(selectedUser, messageInput);
       setMessageInput("");
     }
@@ -55,7 +55,7 @@ export default function Home() {
         </div>
         <div className="p-4 border-t flex items-center">
           <Avatar>
-            <AvatarImage src="/placeholder.svg" alt="User" />
+            {/*<AvatarImage src="/placeholder.svg" alt="User" /> disabled for now, as letters look good*/}
             <AvatarFallback>UN</AvatarFallback>
           </Avatar>
           <span className="ml-2 font-medium">User Name</span>
@@ -66,22 +66,22 @@ export default function Home() {
       <div className="flex-grow flex flex-col">
         {selectedUser ? (
           <>
-          {/* Chatting with User ID: {selectedUser} */}
+            {/* Chatting with User ID: {selectedUser} */}
             <div className="flex-grow p-4 overflow-y-auto border-b">
               {messages
-                .filter((msg) => (msg.from === activeUser && msg.to === selectedUser) || (msg.from === selectedUser && msg.to === activeUser)) //some filter logic, this needs to be corrected
+                .filter((msg) => (msg.from === activeUser && msg.to === selectedUser) || (msg.from === selectedUser && msg.to === activeUser))
                 .map((msg, index) => (
                   <div key={index} className={`mb-2 p-2 rounded-lg ${msg.from === selectedUser ? "bg-gray-300" : "bg-blue-500 text-white"}`} >
                     {msg.message}
                   </div>
-              ))}
+                ))}
             </div>
             <div className="p-4 border-t flex">
-              <Input 
-                className="flex-grow mr-2" 
+              <Input
+                className="flex-grow mr-2"
                 placeholder="Type a message..."
                 value={messageInput}
-                onChange={(e) => setMessageInput(e.target.value)}  
+                onChange={(e) => setMessageInput(e.target.value)}
               />
               <Button onClick={handleSendMessage}>Send</Button>
             </div>
@@ -96,7 +96,7 @@ export default function Home() {
         onClick={() => {
           localStorage.removeItem('authToken');
           localStorage.removeItem('setUserId');
-        }} 
+        }}
         href="/auth" className="absolute top-4 right-4 text-blue-500"
       >
         Logout
