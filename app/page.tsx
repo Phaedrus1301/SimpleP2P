@@ -1,11 +1,45 @@
+"use client"
+
 import Link from "next/link"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Search } from "lucide-react"
 import UserList from "@/components/UserList"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import useWebSocket from "@/lib/ws-setup"
 
 export default function Home() {
+  const router = useRouter();
+  const[activeUser, setActiveUser] = useState<string | null>(null);
+
+  useEffect(() => {
+    const activeUserId = localStorage.getItem("setUserId");
+    setActiveUser(activeUserId);
+    const token = localStorage.getItem("authToken");
+    
+    if(!token) {
+      router.push("/auth");
+    }
+  }, []);
+  
+
+  const [selectedUser, setSelectedUser] = useState<string | null>("");
+
+  const { messages, sendMessage } = useWebSocket(
+    typeof window !== "undefined" ? localStorage.getItem("setUserId") || "" : ""
+  );
+
+  const [messageInput, setMessageInput] = useState(""); 
+
+  const handleSendMessage = () => {
+    if(selectedUser && messageInput.trim() !== "") {
+      sendMessage(selectedUser, messageInput);
+      setMessageInput("");
+    }
+  }
+
   return (
     <div className="flex h-screen bg-gray-100">
       {/* Left sidebar */}
@@ -17,7 +51,7 @@ export default function Home() {
           </div>
         </div>
         <div className="flex-grow">
-          <UserList />
+          <UserList onSelectUser={setSelectedUser} />
         </div>
         <div className="p-4 border-t flex items-center">
           <Avatar>
@@ -30,14 +64,42 @@ export default function Home() {
 
       {/* Main chat area */}
       <div className="flex-grow flex flex-col">
-        <div className="flex-grow p-4">{/* Chat messages would go here */}</div>
-        <div className="p-4 border-t flex">
-          <Input className="flex-grow mr-2" placeholder="Type a message..." />
-          <Button>Send</Button>
-        </div>
+        {selectedUser ? (
+          <>
+          {/* Chatting with User ID: {selectedUser} */}
+            <div className="flex-grow p-4 overflow-y-auto border-b">
+              {messages
+                .filter((msg) => (msg.from === activeUser && msg.to === selectedUser) || (msg.from === selectedUser && msg.to === activeUser)) //some filter logic, this needs to be corrected
+                .map((msg, index) => (
+                  <div key={index} className={`mb-2 p-2 rounded-lg ${msg.from === selectedUser ? "bg-gray-300" : "bg-blue-500 text-white"}`} >
+                    {msg.message}
+                  </div>
+              ))}
+            </div>
+            <div className="p-4 border-t flex">
+              <Input 
+                className="flex-grow mr-2" 
+                placeholder="Type a message..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}  
+              />
+              <Button onClick={handleSendMessage}>Send</Button>
+            </div>
+          </>
+        ) : (
+          <div className="flex-grow flex items-center justify-center text-gray-500">
+            Select a user to start chatting.
+          </div>
+        )}
       </div>
-      <Link href="/auth" className="absolute top-4 right-4 text-blue-500">
-        Sign Up
+      <Link
+        onClick={() => {
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('setUserId');
+        }} 
+        href="/auth" className="absolute top-4 right-4 text-blue-500"
+      >
+        Logout
       </Link>
     </div>
   )

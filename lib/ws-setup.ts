@@ -1,39 +1,52 @@
 import { useState, useEffect } from "react";
 
-let ws: any = null;
+let ws: WebSocket | null = null;
 
-const createWebSocket = () => {
-  if(!ws) {
-    ws = new WebSocket('ws://localhost:3377');
-  } 
-  return ws;
-};
+const useWebSocket = (userId: string) => {
+  const [wsInstance, setWsInstance] = useState<WebSocket | null>(null);
+  const [messages, setMessages] = useState<{ from: string, to: string, message:string}[]>([]);
 
-const useWebSocket = () => {
-  const [wsInstance, setWsInstance] = useState(null);
 
   useEffect(() => {
-    const ws = createWebSocket();
-    setWsInstance(ws);
+    if (!userId) return;
 
-    ws.onmessage = (event: any) => {
-      console.log(`Received message: ${event.data}`);
+    let ws: WebSocket | null = null;
+
+    const connectWS = () => {
+      ws = new WebSocket('ws://localhost:3377');
+
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setMessages((prev) => [...prev, { from: data.string, to: data.to, message: data.message }]);
+      };
+  
+      ws.onerror = (error) => {
+        console.log("Websocket error: ", error);
+      };
+
+      ws.onclose = () => {
+        console.log("WebSocket connection closed");
+      };
+
+      setWsInstance(ws);
     };
 
-    ws.onclose = () => {
-      console.log("WebSocket connection closed");
-    };
-
-    ws.onerror = (error: Error) => {
-      console.log("Websocket error: ", error);
-    };
+    connectWS();
 
     return () => {
-      ws.close();
+      if(ws?.readyState === 1) {
+        ws?.close();
+      }
     }
-  }, []);
+  }, [userId]);
 
-  return wsInstance;
+  const sendMessage = (to: string, message: string) => {
+    if(wsInstance && wsInstance.readyState === WebSocket.OPEN) {
+      wsInstance.send(JSON.stringify({ type: "message", to, userId, message }));
+    }
+  };
+
+  return { wsInstance, messages, sendMessage };
 };
 
 export default useWebSocket;

@@ -1,8 +1,7 @@
-import { NextApiRequest } from "next";
 import db from "../../../lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextApiRequest) {
+export async function GET(req: NextRequest) {
   const url: any = new URL(req.url!);
   const userId = url.searchParams.get('userId');
 
@@ -13,7 +12,8 @@ export async function GET(req: NextApiRequest) {
     });
   });
 
-  return NextResponse.json({ userList });
+  return NextResponse.json(Array.isArray(userList) ? userList : [userList]);
 }
 
 //amil@new new 2233
+//email@new dev 3344

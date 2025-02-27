@@ -27,6 +27,7 @@ export default function SignUp() {
     }
     
     try{
+      console.log(JSON.stringify({ name, email, mobile }));
       const response = await fetch('/api/auth', {
         method: 'POST',
         headers: {
@@ -35,8 +36,9 @@ export default function SignUp() {
         body: JSON.stringify({ name, email, mobile }),
       });
       const data = await response.json();
+      console.log(data);
       if(response.ok) {
-        const userId = data.newUser ? data.newUser.id : data.user.id;
+        const userId = data.newUser ? data.newUser.id : data.existingUser.id;
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('setUserId', userId);
         window.location.href = '/';

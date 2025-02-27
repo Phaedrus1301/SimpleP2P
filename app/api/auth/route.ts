@@ -1,11 +1,10 @@
-import { NextApiRequest } from "next";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import db from "../../../lib/db";
 import jwt from "jsonwebtoken"
 
-export async function POST(req: NextApiRequest) {
+export async function POST(req: NextRequest) {
   
-  const { name, email, mobile } = req.body;
+  const { name, email, mobile } = await req.json();
 
   if(!name || !email || !mobile) {
     return NextResponse.json({ message: "Name, email or mobile is required!"});
