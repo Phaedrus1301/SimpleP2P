@@ -12,12 +12,12 @@ This is a simple WebSocket-based chat application built using Next.js 14 with Ty
 - Temporary message storage for unexpected disconnection
 
 ### App Design
-![architechture](public\chatapp-architechture.png "Architechture")
+![architechture](public/chatapp-architechture.png "Architechture")
 
 ### Working video - dev environment only
 Here I am logging in from 2 different accounts in 2 different browsers locally, which after logging in are registered in our signaling server and hence can chat with each other.
 
-![project video](public\video-showing-app.gif "project video")
+![project video](public/video-showing-app.gif "project video")
 
 ## Tech Stack & Libraries
 This project uses the following libraries:
