@@ -36,10 +36,10 @@ Some of the Radix UI components and template parts in this project are not origi
 
 ### Files I’ve Worked On
 - core serverside websocket - [ws-server.js](ws-server.js)
-- client side websocket setup - [ws-setup.ts](lib\ws-setup.ts)
-- database setup - [db.ts](lib\db.ts)
-- user list as component - [UserList.tsx](components\UserList.tsx)
-- Home page - [home page](app\page.tsx), [auth page](app\auth\page.tsx), [api/auth](app\api\auth\route.ts), [api/users](app\api\users\route.ts)
+- client side websocket setup - [ws-setup.ts](lib/ws-setup.ts)
+- database setup - [db.ts](lib/db.ts)
+- user list as component - [UserList.tsx](components/UserList.tsx)
+- Home page - [home page](app/page.tsx), [auth page](app/auth/page.tsx), [api/auth](app/api/auth/route.ts), [api/users](app/api/users/route.ts)
 
 
 ## Setup & Installation
