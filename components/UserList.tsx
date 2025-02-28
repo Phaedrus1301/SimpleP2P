@@ -20,14 +20,13 @@ export default function UserList({ onSelectUser }: UserListProps) {
   const { onlineUsers } = useWebSocket(userId || "");
 
   useEffect(() => {
-    console.log("is online user's any right now?", onlineUsers);
   }, [onlineUsers]);
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const response = await fetch(`/api/users?userId=${userId}`);
         const data = await response.json();
-        console.log(data);
         setUsers(data);
       } catch(error) {
         console.error(error);

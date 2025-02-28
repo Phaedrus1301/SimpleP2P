@@ -9,20 +9,31 @@ import UserList from "@/components/UserList"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import useWebSocket from "@/lib/ws-setup"
+import { jwtDecode } from "jwt-decode"
+
+interface DecodedToken {
+  userId: string;
+  name: string;
+}
 
 export default function Home() {
   const router = useRouter();
-  const [activeUser, setActiveUser] = useState<string | null>("");
+  const [activeUser, setActiveUser] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    const userNow = localStorage.getItem("setUserId");
-    setActiveUser(userNow);
+    const activeUserId = localStorage.getItem("setUserId");
+    setActiveUser(activeUserId);
     const token = localStorage.getItem("authToken");
+    if (token) {
+      const decoded: DecodedToken = jwtDecode(token);
+      setUserName(decoded.name);
+    }
 
     if (!token) {
       router.push("/auth");
     }
-  }, [activeUser]);
+  }, []);
 
 
   const [selectedUser, setSelectedUser] = useState<string | null>("");
@@ -55,10 +66,9 @@ export default function Home() {
         </div>
         <div className="p-4 border-t flex items-center">
           <Avatar>
-            {/*<AvatarImage src="/placeholder.svg" alt="User" /> disabled for now, as letters look good*/}
-            <AvatarFallback>UN</AvatarFallback>
+            <AvatarFallback>{userName ? userName.slice(0, 1).toUpperCase() : "G"}</AvatarFallback>
           </Avatar>
-          <span className="ml-2 font-medium">User Name</span>
+          <span className="ml-2 font-medium">{userName || "Guest"}</span>
         </div>
       </div>
 
@@ -67,11 +77,14 @@ export default function Home() {
         {selectedUser ? (
           <>
             {/* Chatting with User ID: {selectedUser} */}
-            <div className="flex-grow p-4 overflow-y-auto border-b">
+            {/* <div className="flex-grow p-4 overflow-y-auto border-b"> */}
+            <div className="flex flex-col h-full p-4 overflow-y-auto border-b">
               {messages
-                .filter((msg) => (msg.from === activeUser && msg.to === selectedUser) || (msg.from === selectedUser && msg.to === activeUser))
+                .filter((msg) => String(msg.from) === String(activeUser) && String(msg.to) === String(selectedUser) ||
+                  String(msg.from) === String(selectedUser) && String(msg.to) === String(activeUser)) //some filter logic, this needs to be corrected
                 .map((msg, index) => (
-                  <div key={index} className={`mb-2 p-2 rounded-lg ${msg.from === selectedUser ? "bg-gray-300" : "bg-blue-500 text-white"}`} >
+                  <div key={index} className={`max-w-[75%] break-words px-4 py-2 rounded-lg shadow-md ${String(msg.from) === String(activeUser) ? "bg-blue-500 text-white self-end" : "bg-gray-300 self-start"
+                    }`} >
                     {msg.message}
                   </div>
                 ))}
@@ -94,14 +107,16 @@ export default function Home() {
       </div>
       <Link
         onClick={() => {
-          localStorage.removeItem('authToken');
-          localStorage.removeItem('setUserId');
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("setUserId");
         }}
-        href="/auth" className="absolute top-4 right-4 text-blue-500"
+        href="/auth"
+        className="fixed top-4 right-4 bg-pink-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-pink-700 transition"
       >
         Logout
       </Link>
     </div>
   )
 }
+
 

@@ -19,19 +19,17 @@ const useWebSocket = (userId: string) => {
       ws.onopen = () => {
         const register = { type: "register", userId };
         ws?.send(JSON.stringify(register));
-        ws?.send(JSON.stringify({type: "status"}));
       };
 
       ws.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        if(data.type === "message") {
+        if(data.type === "message") {   
           setMessages((prev) => {
             const newMessages = [...prev, { from: data.from, to: data.to, message: data.message }];
             return newMessages;
           });
         }
         if(data.type === "status") {
-          console.log("status count received", data);
           setOnlineUsers(data.onlineUsers);
         }
 
@@ -66,6 +64,10 @@ const useWebSocket = (userId: string) => {
     const wsInstance = wsRef.current;
     if(wsInstance && wsInstance.readyState === WebSocket.OPEN) {
       const msg = { type: "message", to, userId, message };
+      setMessages((prev) => [
+        ...prev,
+        { from: userId, to, message }
+      ]);
       wsInstance.send(JSON.stringify(msg));
     } else {
       console.log("websocket not open. message not sent.");

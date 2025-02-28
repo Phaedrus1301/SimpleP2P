@@ -5,6 +5,15 @@ const wss = new WebSocket.Server({ port: 3377 });
 const clients = new Map();
 const messageQue = new Map();
 
+const broadcastUsers = () => {
+  const online = { type: "status", onlineUsers: Array.from(clients.keys()) };
+clients.forEach((client) => {
+  if(client.readyState === WebSocket.OPEN) {
+    client.send(JSON.stringify(online));
+  }
+}); 
+};
+
 wss.on("connection", (ws, req) => {
   console.log("New client connected");
 
@@ -14,17 +23,14 @@ wss.on("connection", (ws, req) => {
 
     if(data.type === "register") {
       clients.set(data.userId, ws);
-      console.log("user registered: ", data.userId);   
-    } 
-    if(data.type === "status") {
-      const users = { type: "status", onlineUsers: Array.from(clients.keys()) };
-      console.log(users);
-      ws.send(JSON.stringify(users));
+      console.log("user registered: ", data.userId);
+      
+      broadcastUsers();   
     }
     
     if(data.type === "message") {
       const recipient = clients.get(String(data.to));
-      const messageData = { from: data.userId, to: data.to, message: data.message };
+      const messageData = { type: "message", from: data.userId, to: data.to, message: data.message };
       if(recipient && recipient.readyState === WebSocket.OPEN) {
         console.log(`Recipient found? ${!!recipient}, Sending to: ${recipient}`);
         recipient.send(JSON.stringify(messageData));
@@ -41,6 +47,7 @@ wss.on("connection", (ws, req) => {
     for(let [userId, client] of clients.entries()) {
       if(client === ws) {
         clients.delete(userId);
+        broadcastUsers();  
         console.log("User disconnected: ", userId);
         break;
       }
