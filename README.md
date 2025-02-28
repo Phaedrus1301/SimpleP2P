@@ -35,14 +35,15 @@ This project uses the following libraries:
 
 1. Clone the repository:
    ```sh
-   git clone <repo-url>
-   cd <repo-name>
+   git clone git@github.com:Phaedrus1301/SimpleP2P.git
+   cd SimpleP2P
    ```
 
 2. Install dependencies:
    ```sh
    npm install
    ```
+   Please note that I have used pnpm for those whole development process.
 
 3. Run the development environment:
    ```sh
