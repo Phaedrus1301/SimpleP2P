@@ -67,6 +67,7 @@ Some of the Radix UI components and template parts in this project are not origi
 - The authentication system stores user credentials in an SQLite database.
 - WebSocket connections are established between users using `userId` instead of JWT authentication for simplicity.
 - Since this is a quick and simple project, some security measures have been skipped. For example, JWT tokens and user IDs are stored in localStorage instead of using a more secure approach. This is not recommended for production.
+- I have included `.env.example` file in the repo to demonstrate the required environment variables. I have directly fed values into the code. I am aware its not the ideal approach, and I hope to address it in future iteration of the project if required.  
 
 ## License
 MIT
